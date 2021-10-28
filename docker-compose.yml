@@ -1,0 +1,94 @@
+version: "3.6"
+services:
+  api:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    container_name: ${CONTAINER_NAME}-api
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      # - ./data/logs:/logs
+      - ./custom/serviceAccount.json:/serviceAccount.json:ro
+      - ./custom:/app/custom:ro
+      - ./logs:/app/logs
+    labels:
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api.entrypoints=http"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api.rule=Host(`api.${DOMAIN}`)"
+      # - "traefik.http.middlewares.${CONTAINER_NAME}-api-https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api.middlewares=${CONTAINER_NAME}-api-https-redirect"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.entrypoints=https"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.rule=Host(`api.${DOMAIN}`)"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.tls=true"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.tls.certresolver=http"
+      # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.service=${CONTAINER_NAME}-api"
+      - "traefik.http.services.${CONTAINER_NAME}-api.loadbalancer.server.port=3000"
+    networks:
+      - net
+    ports:
+      - "127.0.0.1:3000:3000" 
+      - "45.90.216.92:3000:3000" 
+
+
+  graphql:
+    image: hasura/graphql-engine:v2.0.3
+    restart: unless-stopped
+    env_file: .env
+    container_name: ${CONTAINER_NAME}-graphql
+    depends_on:
+      - api
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./hasura/migrations:/hasura-migrations:ro
+      - ./hasura/metadata:/hasura-metadata:ro
+    labels:
+      # - "traefik.enable=true"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql.entrypoints=http"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql.rule=Host(`graphql.${DOMAIN}`)"
+      # - "traefik.http.middlewares.${CONTAINER_NAME}-graphql-https-redirect.redirectscheme.scheme=https"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql.middlewares=${CONTAINER_NAME}-graphql-https-redirect"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.entrypoints=https"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.rule=Host(`graphql.${DOMAIN}`)"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.tls=true"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.tls.certresolver=http"
+      # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.service=${CONTAINER_NAME}-graphql"
+      - "traefik.http.services.${CONTAINER_NAME}-graphql.loadbalancer.server.port=8080"
+    networks:
+      - net
+    ports:
+      - "127.0.0.1:8080:8080" 
+      - "45.90.216.92:8080:8080" 
+
+  storage:
+    image: minio/minio
+    restart: unless-stopped
+    container_name: ${CONTAINER_NAME}-storage
+    environment:
+      S3_BUCKET: bucket
+      MINIO_ACCESS_KEY: 8LVK22XLRjeYeV87
+      MINIO_SECRET_KEY: 28kwKbsSDmwM7msN
+    entrypoint: ""
+    command: ["sh", "-c", "/usr/bin/docker-entrypoint.sh minio server /data"]
+    volumes:
+      - ./data/storage:/data
+    labels:
+     # - "traefik.enable=true"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage.entrypoints=http"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage.rule=Host(`storage.${DOMAIN}`)"
+     # - "traefik.http.middlewares.${CONTAINER_NAME}-storage-https-redirect.redirectscheme.scheme=https"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage.middlewares=storage-https-redirect"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.entrypoints=https"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.rule=Host(`storage.${DOMAIN}`)"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.tls=true"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.tls.certresolver=http"
+     # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.service=${CONTAINER_NAME}-storage"
+     - "traefik.http.services.${CONTAINER_NAME}-storage.loadbalancer.server.port=9000"
+    networks:
+      - net
+    ports:
+      - "127.0.0.1:9000:9000" 
+      - "45.90.216.92:9000:9000" 
+
+networks:
+  net:
+    external: true
