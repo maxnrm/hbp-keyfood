@@ -1,17 +1,18 @@
 version: "3.6"
 services:
   api:
-    build: .
+    image: maxnrm/keyfood-api
     restart: unless-stopped
     env_file: .env
     container_name: ${CONTAINER_NAME}-api
     volumes:
+      - ./migrations:/app/migrations
       - /etc/localtime:/etc/localtime:ro
       # - ./data/logs:/logs
       - ./custom/serviceAccount.json:/serviceAccount.json:ro
       - ./custom:/app/custom:ro
       - ./logs:/app/logs
-    labels:
+        #    labels:
       # - "traefik.enable=true"
       # - "traefik.http.routers.${CONTAINER_NAME}-api.entrypoints=http"
       # - "traefik.http.routers.${CONTAINER_NAME}-api.rule=Host(`api.${DOMAIN}`)"
@@ -22,13 +23,11 @@ services:
       # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.tls=true"
       # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.tls.certresolver=http"
       # - "traefik.http.routers.${CONTAINER_NAME}-api-secure.service=${CONTAINER_NAME}-api"
-      - "traefik.http.services.${CONTAINER_NAME}-api.loadbalancer.server.port=3000"
+      #- "traefik.http.services.${CONTAINER_NAME}-api.loadbalancer.server.port=3000"
     networks:
       - net
     ports:
-      - "127.0.0.1:3000:3000" 
-      - "45.90.216.92:3000:3000" 
-
+      - "3000:3000" 
 
   graphql:
     image: hasura/graphql-engine:v2.0.3
@@ -41,7 +40,7 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ./hasura/migrations:/hasura-migrations:ro
       - ./hasura/metadata:/hasura-metadata:ro
-    labels:
+        #    labels:
       # - "traefik.enable=true"
       # - "traefik.http.routers.${CONTAINER_NAME}-graphql.entrypoints=http"
       # - "traefik.http.routers.${CONTAINER_NAME}-graphql.rule=Host(`graphql.${DOMAIN}`)"
@@ -52,12 +51,11 @@ services:
       # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.tls=true"
       # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.tls.certresolver=http"
       # - "traefik.http.routers.${CONTAINER_NAME}-graphql-secure.service=${CONTAINER_NAME}-graphql"
-      - "traefik.http.services.${CONTAINER_NAME}-graphql.loadbalancer.server.port=8080"
+      # - "traefik.http.services.${CONTAINER_NAME}-graphql.loadbalancer.server.port=8080"
     networks:
       - net
     ports:
-      - "127.0.0.1:8080:8080" 
-      - "45.90.216.92:8080:8080" 
+      - "8080:8080" 
 
   storage:
     image: minio/minio
@@ -71,7 +69,7 @@ services:
     command: ["sh", "-c", "/usr/bin/docker-entrypoint.sh minio server /data"]
     volumes:
       - ./data/storage:/data
-    labels:
+#    labels:
      # - "traefik.enable=true"
      # - "traefik.http.routers.${CONTAINER_NAME}-storage.entrypoints=http"
      # - "traefik.http.routers.${CONTAINER_NAME}-storage.rule=Host(`storage.${DOMAIN}`)"
@@ -82,12 +80,11 @@ services:
      # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.tls=true"
      # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.tls.certresolver=http"
      # - "traefik.http.routers.${CONTAINER_NAME}-storage-secure.service=${CONTAINER_NAME}-storage"
-     - "traefik.http.services.${CONTAINER_NAME}-storage.loadbalancer.server.port=9000"
+     # - "traefik.http.services.${CONTAINER_NAME}-storage.loadbalancer.server.port=9000"
     networks:
       - net
     ports:
-      - "127.0.0.1:9000:9000" 
-      - "45.90.216.92:9000:9000" 
+      - "9000:9000" 
 
 networks:
   net:

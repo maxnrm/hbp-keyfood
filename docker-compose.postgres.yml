@@ -1,23 +1,20 @@
 version: "3.6"
 services:
   db:
-    build:
-      dockerfile: ./docker/Dockerfile.database
-      context: ./
+    image: 'nhost/postgres:12-v0.0.6'
     restart: unless-stopped
     container_name: ${CONTAINER_NAME}-db
     env_file: .env
     environment:
       PGDATA: /var/lib/postgresql/data/db
-      POSTGRES_INITDB_ARGS: --lc-collate=ru-RU --lc-ctype=ru-RU
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ./data/postgres:/var/lib/postgresql/data
       # - ./docker/posgresql.conf:/var/lib/postgresql/data/postgresql.conf
     networks:
       - net
-    ports:
-      - "127.0.0.1:55432:5432"      
+        #    ports:
+        #      - "127.0.0.1:55432:5432"      
 
 networks:
   net:
